@@ -7,7 +7,6 @@ package servidor;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -16,6 +15,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import modelo.Hospedagem;
 import modelo.Voo;
 import util.Util;
@@ -31,26 +31,24 @@ public class ServidorREST {
     private final ConcurrentMap<String, Hospedagem> hospedagens;
     
     public ServidorREST() {
-        this.hospedagens = new ConcurrentHashMap<>();
-        this.voos = new ConcurrentHashMap<>();
-        
-        Voo v = new Voo();
-        v.setOrigem("ctba");
-        v.setDestino("sp");
-        v.setAssentos(10);
-        v.setData("2016-05-26");
-        v.setPreco(new Float(10));
-        voos.put(v.getId(), v);
-        
-        v = new Voo();
-        v.setOrigem("sp");
-        v.setDestino("ctba");
-        v.setAssentos(10);
-        v.setData("2016-05-30");
-        v.setPreco(new Float(10));
-        voos.put(v.getId(), v);
+        this.hospedagens = Util.iniciarHospedagens();
+        this.voos = Util.iniciarVoos();
     }
     
+    /**
+     * Realiza uma consulta de voos disponíveis. 
+     * URI: host/contexto/rest/serv/consultarvoo. 
+     * A origem e o destino são obrigatórios. Se o parâmetro volta estiver 
+     * com um valor diferente de 1, somente voos de ida são buscados. A resposta 
+     * segue o seguinte formato: <code>{size:N, array:Objetos}</code>, onde 
+     * Objetos são os voos que verificam com a busca e N o total de Objetos.
+     * @param origem
+     * @param dataIda
+     * @param destino
+     * @param dataVolta
+     * @param volta
+     * @return 
+     */
     @GET
     @Produces("application/json")
     @Path("/consultarvoo")
@@ -59,14 +57,10 @@ public class ServidorREST {
             @DefaultValue("") @QueryParam("dataida") String dataIda, 
             @DefaultValue("") @QueryParam("destino") String destino, 
             @DefaultValue("") @QueryParam("datavolta") String dataVolta,
-            @DefaultValue("0") @QueryParam("somenteida") String somenteIda) {
+            @DefaultValue("1") @QueryParam("volta") String volta) {
         
-        Response.ResponseBuilder rb = Response.status(200);
+        ResponseBuilder rb = Response.status(200);
         ArrayList<Voo> list = new ArrayList<>();
-        
-        /*System.out.println("acessou");
-        long time = System.currentTimeMillis() + 10000;
-        while (System.currentTimeMillis() < time) {}*/
         
         if (origem.equals("") || destino.equals("")) {
             return rb.status(400).entity("{\"size\":\"0\"}").build();
@@ -82,7 +76,7 @@ public class ServidorREST {
                 continue;
             }
             // procurar por volta ou nao
-            if (somenteIda.equals("0")) {
+            if (volta.equals("0")) {
                 continue;
             }
             // procura por voo volta
@@ -92,17 +86,19 @@ public class ServidorREST {
             }
         }
                 
-        return rb.entity(Util.toJSON(list)).build();
+        return rb.entity(Util.toJSONVoos(list)).build();
     }
     
     /**
-     * Recebe os ids dos voos de ida e volta e o total de assentos.
-     * Se ida ou assento nao forem definidos retorna: 
-     * <code>{status:0, mensagem:erro}</code>. 
-     * Em sucesso retorna: <code>{status:1, mensagem:sucesso}</code>.
+     * Compra voo de ida e volta baseado no número de assentos. 
+     * URI: host/contexto/rest/serv/comprarvoo. 
+     * Ida e assentos são obrigatórios. Verifica se o número de assentos está 
+     * disponível, antes de concluir a compra. A resposta segue o seguinte 
+     * formato: <code>{status:X, mensagem:Y}</code>, onde X pode ser 0 ou 1, 
+     * acompanhado da mensagem 'erro' ou 'sucesso', respectivamente.
      * @param ida
      * @param volta
-     * @param assento
+     * @param assentos
      * @return 
      */
     @GET
@@ -112,24 +108,72 @@ public class ServidorREST {
     public Response comprarVoo(
             @DefaultValue("") @QueryParam("ida") String ida,
             @DefaultValue("") @QueryParam("volta") String volta,
-            @DefaultValue("") @QueryParam("assento") String assento) {
+            @DefaultValue("") @QueryParam("assentos") String assentos) {
         
-       Response.ResponseBuilder rb = Response.status(200);
+       ResponseBuilder rb = Response.status(200);
        
        // parametros incorretos
-       if (ida.equals("") || assento.equals("") || assento.equals("0")) {
+       if (ida.equals("") || assentos.equals("") || assentos.equals("0")) {
            return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
        }
        // comprar ida
        if (voos.containsKey(ida)) {
-           voos.get(ida).diminuirAssentos(Integer.parseInt(assento));
+           voos.get(ida).diminuirAssentos(Integer.parseInt(assentos));
        }
        // comprar volta
        if (!volta.equals("") && voos.containsKey(volta)) {
-           voos.get(volta).diminuirAssentos(Integer.parseInt(assento));
+           voos.get(volta).diminuirAssentos(Integer.parseInt(assentos));
        }
-       rb.entity("{\"status\":\"1\",\"mensagem\":\"sucesso\"}");
        
-       return rb.build();
+       return rb.entity("{\"status\":\"1\",\"mensagem\":\"sucesso\"}").build();
+    }
+    
+    /**
+     * Realiza uma consulta de hospedagens disponíveis. 
+     * URI: host/contexto/rest/serv/consultarhospedagem. 
+     * O parâmetro destino é obrigatório. A data de entrada deve sermpre vir 
+     * acompanhada da data de saída e vice-versa. A resposta segue o seguinte 
+     * formato: <code>{size:N, array:Objetos}</code>, onde Objetos são os voos 
+     * que verificam com a busca e N o total de Objetos.
+     * @param destino
+     * @param dataEntrada
+     * @param dataSaida
+     * @return 
+     */
+    @GET
+    @Produces("application/json")
+    @Path("/consultarhospedagem")
+    public Response consultarHospedagem(
+            @DefaultValue("") @QueryParam("destino") String destino, 
+            @DefaultValue("") @QueryParam("dataentrada") String dataEntrada, 
+            @DefaultValue("") @QueryParam("datasaida") String dataSaida) {
+        
+        ResponseBuilder rb = Response.status(200);
+        ArrayList<Hospedagem> list = new ArrayList<>();
+        
+        if (destino.equals("")) {
+            return rb.status(400).entity("{\"size\":\"0\"}").build();
+        }
+        
+        for (Map.Entry pair : hospedagens.entrySet()) {
+            Hospedagem h = (Hospedagem) pair.getValue();
+            
+            // nao eh o destino procurado
+            if (!destino.equals(h.getDestino())) {
+                continue;
+            }
+            // destino encontrado, mas sem datas definidas
+            if (dataEntrada.equals("") && dataSaida.equals("")) {
+                list.add(h);
+                continue;
+            }
+            // destino encontrado com datas definidas
+            if (h.getQuartosPorData().containsKey(dataEntrada) 
+                    && h.getQuartosPorData().containsKey(dataSaida)) {
+                list.add(h);
+            }
+        }
+        
+        return rb.entity(Util.toJSONHospedagens(list)).build();
     }
 }
