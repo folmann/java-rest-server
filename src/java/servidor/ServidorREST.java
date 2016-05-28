@@ -96,9 +96,9 @@ public class ServidorREST {
      * disponível, antes de concluir a compra. A resposta segue o seguinte 
      * formato: <code>{status:X, mensagem:Y}</code>, onde X pode ser 0 ou 1, 
      * acompanhado da mensagem 'erro' ou 'sucesso', respectivamente.
-     * @param ida
-     * @param volta
-     * @param assentos
+     * @param ida Identificador do voo de ida
+     * @param volta Identificador do voo de volta
+     * @param assentos Número de assentos (ida e volta)
      * @return 
      */
     @GET
@@ -175,5 +175,61 @@ public class ServidorREST {
         }
         
         return rb.entity(Util.toJSONHospedagens(list)).build();
+    }
+    
+    /**
+     * Compra hospedagem. Um período entre entrada e sáida.  
+     * URI: host/contexto/rest/serv/comprarhospedagem. 
+     * Destino, entrada, saida e quartos são obrigatórios. Verifica se o número 
+     * de quartos está disponível, antes de concluir a compra. A resposta segue 
+     * o seguinte formato: <code>{status:X, mensagem:Y}</code>, onde X pode ser 
+     * 0 ou 1, acompanhado da mensagem 'erro' ou 'sucesso', respectivamente.
+     * @param destino Identificador da hospedagem
+     * @param dataEntrada
+     * @param dataSaida
+     * @param quartos Número de quartos desejados
+     * @return 
+     */
+    @GET
+    @POST
+    @Produces("application/json")
+    @Path("/comprarhospedagem")
+    public synchronized Response comprarHospedagem(
+            @DefaultValue("") @QueryParam("destino") String destino,
+            @DefaultValue("") @QueryParam("dataentrada") String dataEntrada,
+            @DefaultValue("") @QueryParam("datasaida") String dataSaida,
+            @DefaultValue("0") @QueryParam("quartos") String quartos) {
+        
+        ResponseBuilder rb = Response.status(200);
+        
+        // parâmetros incorretos
+        if (destino.equals("") || dataEntrada.equals("") 
+                || dataSaida.equals("") || quartos.equals("0")) {
+            return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+        }
+        // destino não existe
+        if (!hospedagens.containsKey(destino)) {
+            return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+        }
+        // veriricar disponibilidade de quartos por dia
+        Integer intQuartos = Integer.parseInt(quartos);
+        Hospedagem h = hospedagens.get(destino);
+        for (Map.Entry pair : h.getQuartosPorData().entrySet()) {
+            String data = (String) pair.getKey();
+            Integer numQuartos = (Integer) pair.getValue();
+        
+            // ignorar datas que não estão no intervalo esperado
+            if (data.compareTo(dataEntrada) < 0 || data.compareTo(dataSaida) > 0) {
+                continue;
+            }
+            // número de quartos disponíveis menor que desejados
+            if (intQuartos > numQuartos) {
+                return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+            }
+            h.diminuirQuartosPorData(intQuartos, data);
+        }
+        hospedagens.put(h.getId(), h);
+        
+        return rb.entity("{\"status\":\"1\",\"mensagem\":\"sucesso\"}").build();
     }
 }
