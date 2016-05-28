@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package util;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import modelo.Hospedagem;
 import modelo.Voo;
@@ -39,10 +33,7 @@ public class Util {
         return json;
     }
     
-    public static ConcurrentMap<String, Hospedagem> iniciarHospedagens() {
-        ConcurrentMap<String, Hospedagem> hosp;
-        hosp = new ConcurrentHashMap<>();
-        
+    public static void iniciarHospedagens(ConcurrentMap<String, Hospedagem> hosp) {
         Hospedagem h = new Hospedagem();
         h.setDestino("saopaulo");
         h.adicionarQuartosPorData(10, "2016-06-01");
@@ -56,14 +47,9 @@ public class Util {
         h.adicionarQuartosPorData(20, "2016-06-02");
         h.adicionarQuartosPorData(20, "2016-06-03");
         hosp.put(h.getId(), h);
-        
-        return hosp;
     }
     
-    public static ConcurrentMap<String, Voo> iniciarVoos() {
-        ConcurrentMap<String, Voo> voos;
-        voos = new ConcurrentHashMap<>();
-        
+    public static void iniciarVoos(ConcurrentMap<String, Voo> voos) {
         Voo v = new Voo();
         v.setOrigem("curitiba");
         v.setDestino("saopaulo");
@@ -87,7 +73,5 @@ public class Util {
         v.setDestino("curitiba");
         v.setData("2016-06-03");
         voos.put(v.getId(), v);
-        
-        return voos;
     }
 }
