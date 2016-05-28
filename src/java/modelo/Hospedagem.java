@@ -1,78 +1,61 @@
 package modelo;
 
-import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 
-public class Hospedagem implements Serializable {
+public class Hospedagem {
     
-    private Integer id;
+    private String id;
     private String destino;
-    private String dataEntrada;
-    private String dataSaida;
-    private Integer numQuartos;
     private Float preco;
+    private final HashMap<String, Integer> quartosPorData;
     
     public Hospedagem() {
-        id = (new Long((new Date().getTime())/1000).intValue())
-                 + (new Random().nextInt(10000));
-        dataEntrada = null;
-        dataSaida = null;
-        numQuartos = 0;
+        id = Integer.toString(
+                (new Long((new Date().getTime())/1000).intValue())
+                    + (new Random().nextInt(10000)));
+        preco = (float) 10;
+        quartosPorData = new HashMap<>();
     }
     
-    public Hospedagem(Integer i) {
-        id = i;
-        dataEntrada = null;
-        dataSaida = null;
-        numQuartos = 0;
+    public void adicionarQuartosPorData(Integer quartos, String data) {
+        if (quartosPorData.containsKey(data)) {
+            quartos += quartosPorData.get(data);
+        }
+        quartosPorData.put(data, quartos);
     }
-
-    public Integer getId() {
+    
+    public void diminuirQuartosPorData(Integer quartos, String data) {
+        if (!quartosPorData.containsKey(data)) {
+            return;
+        }
+        if (quartosPorData.get(data) < quartos) {
+            return;
+        }
+        adicionarQuartosPorData(-quartos, data);
+    }
+    
+    // getters e setters
+    public String getId() {
         return id;
     }
-
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
-
     public String getDestino() {
         return destino;
     }
-
     public void setDestino(String destino) {
         this.destino = destino;
     }
-
-    public String getDataEntrada() {
-        return dataEntrada;
-    }
-
-    public void setDataEntrada(String dataEntrada) {
-        this.dataEntrada = dataEntrada;
-    }
-
-    public String getDataSaida() {
-        return dataSaida;
-    }
-
-    public void setDataSaida(String dataSaida) {
-        this.dataSaida = dataSaida;
-    }
-
-    public Integer getNumQuartos() {
-        return numQuartos;
-    }
-
-    public void setNumQuartos(Integer numQuartos) {
-        this.numQuartos = numQuartos;
-    }
-
     public Float getPreco() {
         return preco;
     }
-
     public void setPreco(Float preco) {
         this.preco = preco;
-    }   
+    }
+    public HashMap<String, Integer> getQuartosPorData() {
+        return quartosPorData;
+    }
 }
