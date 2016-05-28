@@ -1,11 +1,10 @@
 package modelo;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Random;
 
-public class Voo implements Serializable {
+public class Voo {
     
     private String id;
     private String origem;
