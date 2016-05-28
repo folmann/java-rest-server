@@ -11,6 +11,9 @@ public class Hospedagem {
     private Float preco;
     private final HashMap<String, Integer> quartosPorData;
     
+    /**
+     * Construtor. O id é gerado automaticamente.
+     */
     public Hospedagem() {
         id = Integer.toString(
                 (new Long((new Date().getTime())/1000).intValue())
@@ -19,6 +22,10 @@ public class Hospedagem {
         quartosPorData = new HashMap<>();
     }
     
+    /**
+     * Construtor. Faz uma cópia do objeto Hospedagem h.
+     * @param h 
+     */
     public Hospedagem(Hospedagem h) {
         id = h.getId();
         destino = h.getDestino();
@@ -26,6 +33,12 @@ public class Hospedagem {
         quartosPorData = new HashMap<>(h.getQuartosPorData());
     }
     
+    /**
+     * Adiciona quartos para uma data. Se a data já existe, então apenas 
+     * incrementa o valor atual.
+     * @param quartos
+     * @param data 
+     */
     public void adicionarQuartosPorData(Integer quartos, String data) {
         if (quartosPorData.containsKey(data)) {
             quartos += quartosPorData.get(data);
@@ -33,6 +46,13 @@ public class Hospedagem {
         quartosPorData.put(data, quartos);
     }
     
+    /**
+     * Diminui o número de quartos para uma data. Se a data não existe ou o 
+     * número de quartos atual é inferior ao que deve ser subtraído, então 
+     * a atualização não é realizada.
+     * @param quartos
+     * @param data 
+     */
     public void diminuirQuartosPorData(Integer quartos, String data) {
         if (!quartosPorData.containsKey(data)) {
             return;
