@@ -13,6 +13,11 @@ import org.json.simple.JSONObject;
  */
 public class Util {
     
+    /**
+     * Retorna um objeto JSON com os valores passados em list.
+     * @param list
+     * @return 
+     */
     public static JSONObject toJSONVoos(ArrayList<Voo> list) {
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject();
@@ -23,6 +28,11 @@ public class Util {
         return json;
     }
     
+    /**
+     * Retorna um objeto JSON com os valores passados em list.
+     * @param list
+     * @return 
+     */
     public static JSONObject toJSONHospedagens(ArrayList<Hospedagem> list) {
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject();
@@ -33,6 +43,10 @@ public class Util {
         return json;
     }
     
+    /**
+     * Iniciar lista de hospedagens com alguns valores.
+     * @param hosp 
+     */
     public static void iniciarHospedagens(ConcurrentMap<String, Hospedagem> hosp) {
         Hospedagem h = new Hospedagem();
         h.setDestino("saopaulo");
@@ -49,6 +63,10 @@ public class Util {
         hosp.put(h.getId(), h);
     }
     
+    /**
+     * Iniciar lista de voos com alguns valores.
+     * @param voos 
+     */
     public static void iniciarVoos(ConcurrentMap<String, Voo> voos) {
         Voo v = new Voo();
         v.setOrigem("curitiba");
