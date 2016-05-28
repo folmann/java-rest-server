@@ -1,12 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package servidor;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -27,13 +23,8 @@ import util.Util;
 @Path("/serv")
 public class ServidorREST {
     
-    private final ConcurrentMap<String, Voo> voos;
-    private final ConcurrentMap<String, Hospedagem> hospedagens;
-    
-    public ServidorREST() {
-        this.hospedagens = Util.iniciarHospedagens();
-        this.voos = Util.iniciarVoos();
-    }
+    private static final ConcurrentMap<String, Voo> VOOS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, Hospedagem> HOSPEDAGENS = new ConcurrentHashMap<>();
     
     /**
      * Realiza uma consulta de voos disponíveis. 
@@ -66,7 +57,7 @@ public class ServidorREST {
             return rb.status(400).entity("{\"size\":\"0\"}").build();
         }
         
-        for (Map.Entry pair : voos.entrySet()) {
+        for (Map.Entry pair : VOOS.entrySet()) {
             Voo v = (Voo) pair.getValue();
             
             // procura por voo ida
@@ -108,22 +99,28 @@ public class ServidorREST {
     public Response comprarVoo(
             @DefaultValue("") @QueryParam("ida") String ida,
             @DefaultValue("") @QueryParam("volta") String volta,
-            @DefaultValue("") @QueryParam("assentos") String assentos) {
+            @DefaultValue("0") @QueryParam("assentos") String assentos) {
         
        ResponseBuilder rb = Response.status(200);
        
        // parametros incorretos
-       if (ida.equals("") || assentos.equals("") || assentos.equals("0")) {
+       if (ida.equals("") || assentos.equals("0")) {
            return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
        }
-       // comprar ida
-       if (voos.containsKey(ida)) {
-           voos.get(ida).diminuirAssentos(Integer.parseInt(assentos));
+       // voo ida não existe ou não tem assentos
+       Integer intAssentos = Integer.parseInt(assentos);
+       if (!VOOS.containsKey(ida) || VOOS.get(ida).getAssentos() < intAssentos) {
+           return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
        }
-       // comprar volta
-       if (!volta.equals("") && voos.containsKey(volta)) {
-           voos.get(volta).diminuirAssentos(Integer.parseInt(assentos));
+       // voo volta está definido
+       if (!volta.equals("")) {
+            // voo volta não existe ou não tem assentos
+            if (!VOOS.containsKey(volta) || VOOS.get(volta).getAssentos() < intAssentos) {
+                return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+            }
+            VOOS.get(volta).diminuirAssentos(intAssentos);
        }
+       VOOS.get(ida).diminuirAssentos(intAssentos);
        
        return rb.entity("{\"status\":\"1\",\"mensagem\":\"sucesso\"}").build();
     }
@@ -155,7 +152,7 @@ public class ServidorREST {
             return rb.status(400).entity("{\"size\":\"0\"}").build();
         }
         
-        for (Map.Entry pair : hospedagens.entrySet()) {
+        for (Map.Entry pair : HOSPEDAGENS.entrySet()) {
             Hospedagem h = (Hospedagem) pair.getValue();
             
             // nao eh o destino procurado
@@ -208,12 +205,12 @@ public class ServidorREST {
             return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
         }
         // destino não existe
-        if (!hospedagens.containsKey(destino)) {
+        if (!HOSPEDAGENS.containsKey(destino)) {
             return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
         }
         // veriricar disponibilidade de quartos por dia
         Integer intQuartos = Integer.parseInt(quartos);
-        Hospedagem h = hospedagens.get(destino);
+        Hospedagem h = new Hospedagem(HOSPEDAGENS.get(destino));
         for (Map.Entry pair : h.getQuartosPorData().entrySet()) {
             String data = (String) pair.getKey();
             Integer numQuartos = (Integer) pair.getValue();
@@ -228,8 +225,17 @@ public class ServidorREST {
             }
             h.diminuirQuartosPorData(intQuartos, data);
         }
-        hospedagens.put(h.getId(), h);
+        HOSPEDAGENS.put(h.getId(), h);
         
         return rb.entity("{\"status\":\"1\",\"mensagem\":\"sucesso\"}").build();
+    }
+    
+    @GET
+    @Path("/iniciar")
+    public Response iniciar() {
+        Util.iniciarHospedagens(HOSPEDAGENS);
+        Util.iniciarVoos(VOOS);
+
+        return Response.status(200).build();
     }
 }
