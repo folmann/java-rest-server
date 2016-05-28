@@ -1,6 +1,7 @@
 package modelo;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Random;
 
@@ -15,22 +16,19 @@ public class Voo implements Serializable {
     
     public Voo() {
         // id gerado automaticamente
-        id = Integer.toString((new Long((new Date().getTime())/1000).intValue()) 
-                + (new Random().nextInt(10000)));
-        data = "";
-        assentos = 0;
-    }
-    
-    public Voo(String i) {
-        id = i;
-        data = "";
-        assentos = 0;
+        id = Integer.toString(
+                (new Long((new Date().getTime())/1000).intValue()) 
+                    + (new Random().nextInt(10000)));
+        data = LocalDate.now().toString();
+        assentos = 10;
+        preco = (float) 10;
     }
     
     public void diminuirAssentos(Integer assentos) {
-        this.assentos -= assentos;
+        if (this.assentos >= assentos) {
+            this.assentos -= assentos;
+        }
     }
-    
     
     // getters e setters
     public String getId() {
