@@ -13,8 +13,11 @@ public class Voo {
     private Integer assentos;
     private Float preco;
     
+    /**
+     * Construtor. O id é gerado automaticamente. A data é iniciada com o dia
+     * atual.
+     */
     public Voo() {
-        // id gerado automaticamente
         id = Integer.toString(
                 (new Long((new Date().getTime())/1000).intValue()) 
                     + (new Random().nextInt(10000)));
@@ -23,6 +26,10 @@ public class Voo {
         preco = (float) 10;
     }
     
+    /**
+     * Diminui o número de assentos.
+     * @param assentos 
+     */
     public void diminuirAssentos(Integer assentos) {
         if (this.assentos >= assentos) {
             this.assentos -= assentos;
