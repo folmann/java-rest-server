@@ -19,6 +19,13 @@ public class Hospedagem {
         quartosPorData = new HashMap<>();
     }
     
+    public Hospedagem(Hospedagem h) {
+        id = h.getId();
+        destino = h.getDestino();
+        preco = h.getPreco();
+        quartosPorData = new HashMap<>(h.getQuartosPorData());
+    }
+    
     public void adicionarQuartosPorData(Integer quartos, String data) {
         if (quartosPorData.containsKey(data)) {
             quartos += quartosPorData.get(data);
