@@ -201,12 +201,13 @@ public class ServidorREST {
         
         // parâmetros incorretos
         if (destino.equals("") || dataEntrada.equals("") 
-                || dataSaida.equals("") || quartos.equals("0")) {
-            return rb.status(400).entity("{\"mensagem\":\"erro\"}").build();
+                || dataSaida.equals("") || quartos.equals("0")
+                || dataEntrada.compareTo(dataSaida) > 0) {
+            return rb.status(400).entity("{\"mensagem\":\"Parâmetros incorretos\"}").build();
         }
         // destino não existe
         if (!HOSPEDAGENS.containsKey(destino)) {
-            return rb.status(404).entity("{\"mensagem\":\"Hospedagem não disponível\"}").build();
+            return rb.status(404).entity("{\"mensagem\":\"Hospedagem não existe\"}").build();
         }
         // veriricar disponibilidade de quartos por dia
         Integer intQuartos = Integer.parseInt(quartos);
