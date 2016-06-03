@@ -85,14 +85,13 @@ public class ServidorREST {
      * URI: host/contexto/rest/serv/comprarvoo. 
      * Ida e assentos são obrigatórios. Verifica se o número de assentos está 
      * disponível, antes de concluir a compra. A resposta segue o seguinte 
-     * formato: <code>{status:X, mensagem:Y}</code>, onde X pode ser 0 ou 1, 
-     * acompanhado da mensagem 'erro' ou 'sucesso', respectivamente.
+     * formato: <code>{"mensagem":Y}</code>, onde Y pode ser uma mensagem de 
+     * 'erro' ou 'sucesso'.
      * @param ida Identificador do voo de ida
      * @param volta Identificador do voo de volta
      * @param assentos Número de assentos (ida e volta)
      * @return 
      */
-    @GET
     @POST
     @Produces("application/json")
     @Path("/comprarvoo")
@@ -103,26 +102,28 @@ public class ServidorREST {
         
        ResponseBuilder rb = Response.status(200);
        
+        System.out.println(ida+volta+assentos);
+       
        // parametros incorretos
        if (ida.equals("") || assentos.equals("0")) {
-           return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+           return rb.status(400).entity("{\"mensagem\":\"parâmetros incorretos\"}").build();
        }
        // voo ida não existe ou não tem assentos
        Integer intAssentos = Integer.parseInt(assentos);
        if (!VOOS.containsKey(ida) || VOOS.get(ida).getAssentos() < intAssentos) {
-           return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+           return rb.status(404).entity("{\"mensagem\":\"voo não disponível\"}").build();
        }
        // voo volta está definido
        if (!volta.equals("")) {
             // voo volta não existe ou não tem assentos
             if (!VOOS.containsKey(volta) || VOOS.get(volta).getAssentos() < intAssentos) {
-                return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+                return rb.status(404).entity("{\"mensagem\":\"voo não disponível\"}").build();
             }
             VOOS.get(volta).diminuirAssentos(intAssentos);
        }
        VOOS.get(ida).diminuirAssentos(intAssentos);
        
-       return rb.entity("{\"status\":\"1\",\"mensagem\":\"sucesso\"}").build();
+       return rb.entity("{\"mensagem\":\"sucesso\"}").build();
     }
     
     /**
@@ -179,15 +180,14 @@ public class ServidorREST {
      * URI: host/contexto/rest/serv/comprarhospedagem. 
      * Destino, entrada, saida e quartos são obrigatórios. Verifica se o número 
      * de quartos está disponível, antes de concluir a compra. A resposta segue 
-     * o seguinte formato: <code>{status:X, mensagem:Y}</code>, onde X pode ser 
-     * 0 ou 1, acompanhado da mensagem 'erro' ou 'sucesso', respectivamente.
+     * o seguinte formato: <code>{"mensagem":Y}</code>, onde Y pode ser 
+     * uma mensagem 'erro' ou 'sucesso'.
      * @param destino Identificador da hospedagem
      * @param dataEntrada
      * @param dataSaida
      * @param quartos Número de quartos desejados
      * @return 
      */
-    @GET
     @POST
     @Produces("application/json")
     @Path("/comprarhospedagem")
@@ -202,11 +202,11 @@ public class ServidorREST {
         // parâmetros incorretos
         if (destino.equals("") || dataEntrada.equals("") 
                 || dataSaida.equals("") || quartos.equals("0")) {
-            return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+            return rb.status(400).entity("{\"mensagem\":\"erro\"}").build();
         }
         // destino não existe
         if (!HOSPEDAGENS.containsKey(destino)) {
-            return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+            return rb.status(404).entity("{\"mensagem\":\"Hospedagem não disponível\"}").build();
         }
         // veriricar disponibilidade de quartos por dia
         Integer intQuartos = Integer.parseInt(quartos);
@@ -221,13 +221,13 @@ public class ServidorREST {
             }
             // número de quartos disponíveis menor que desejados
             if (intQuartos > numQuartos) {
-                return rb.status(400).entity("{\"status\":\"0\",\"mensagem\":\"erro\"}").build();
+                return rb.status(404).entity("{\"mensagem\":\"Quartos não disponíveis\"}").build();
             }
             h.diminuirQuartosPorData(intQuartos, data);
         }
         HOSPEDAGENS.put(h.getId(), h);
         
-        return rb.entity("{\"status\":\"1\",\"mensagem\":\"sucesso\"}").build();
+        return rb.entity("{\"mensagem\":\"sucesso\"}").build();
     }
     
     @GET
