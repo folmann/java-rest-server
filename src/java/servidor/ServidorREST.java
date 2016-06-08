@@ -69,7 +69,7 @@ public class ServidorREST {
                 continue;
             }
             // procurar por volta ou nao
-            if (volta.equals("0")) {
+            if (!volta.equals("1")) {
                 continue;
             }
             // procura por voo volta
