@@ -50,16 +50,16 @@ public class Util {
     public static void iniciarHospedagens(ConcurrentMap<String, Hospedagem> hosp) {
         Hospedagem h = new Hospedagem();
         h.setDestino("saopaulo");
-        h.adicionarQuartosPorData(10, "2016-06-01");
-        h.adicionarQuartosPorData(10, "2016-06-02");
-        h.adicionarQuartosPorData(10, "2016-06-03");
+        h.adicionarQuartosPorData(10, "2016-06-08");
+        h.adicionarQuartosPorData(10, "2016-06-09");
+        h.adicionarQuartosPorData(10, "2016-06-10");
         hosp.put(h.getId(), h);
         
         h = new Hospedagem();
         h.setDestino("catarina");
-        h.adicionarQuartosPorData(20, "2016-06-01");
-        h.adicionarQuartosPorData(20, "2016-06-02");
-        h.adicionarQuartosPorData(20, "2016-06-03");
+        h.adicionarQuartosPorData(20, "2016-06-08");
+        h.adicionarQuartosPorData(20, "2016-06-09");
+        h.adicionarQuartosPorData(20, "2016-06-10");
         hosp.put(h.getId(), h);
     }
     
@@ -71,25 +71,25 @@ public class Util {
         Voo v = new Voo();
         v.setOrigem("curitiba");
         v.setDestino("saopaulo");
-        v.setData("2016-06-01");
+        v.setData("2016-06-08");
         voos.put(v.getId(), v);
         
         v = new Voo();
         v.setOrigem("saopaulo");
         v.setDestino("curitiba");
-        v.setData("2016-06-01");
+        v.setData("2016-06-08");
         voos.put(v.getId(), v);
         
         v = new Voo();
         v.setOrigem("saopaulo");
         v.setDestino("curitiba");
-        v.setData("2016-06-02");
+        v.setData("2016-06-09");
         voos.put(v.getId(), v);
         
         v = new Voo();
         v.setOrigem("saopaulo");
         v.setDestino("curitiba");
-        v.setData("2016-06-03");
+        v.setData("2016-06-10");
         voos.put(v.getId(), v);
     }
 }
