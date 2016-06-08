@@ -53,6 +53,8 @@ public class ServidorREST {
         ResponseBuilder rb = Response.status(200);
         ArrayList<Voo> list = new ArrayList<>();
         
+        System.out.println(origem+dataIda+destino+dataVolta+volta);
+        
         if (origem.equals("") || destino.equals("")) {
             return rb.status(400).entity("{\"size\":\"0\"}").build();
         }
@@ -100,30 +102,30 @@ public class ServidorREST {
             @DefaultValue("") @QueryParam("volta") String volta,
             @DefaultValue("0") @QueryParam("assentos") String assentos) {
         
-       ResponseBuilder rb = Response.status(200);
+        ResponseBuilder rb = Response.status(200);
        
         System.out.println(ida+volta+assentos);
        
-       // parametros incorretos
-       if (ida.equals("") || assentos.equals("0")) {
-           return rb.status(400).entity("{\"mensagem\":\"parâmetros incorretos\"}").build();
-       }
-       // voo ida não existe ou não tem assentos
-       Integer intAssentos = Integer.parseInt(assentos);
-       if (!VOOS.containsKey(ida) || VOOS.get(ida).getAssentos() < intAssentos) {
-           return rb.status(404).entity("{\"mensagem\":\"voo não disponível\"}").build();
-       }
-       // voo volta está definido
-       if (!volta.equals("")) {
-            // voo volta não existe ou não tem assentos
-            if (!VOOS.containsKey(volta) || VOOS.get(volta).getAssentos() < intAssentos) {
-                return rb.status(404).entity("{\"mensagem\":\"voo não disponível\"}").build();
-            }
-            VOOS.get(volta).diminuirAssentos(intAssentos);
-       }
-       VOOS.get(ida).diminuirAssentos(intAssentos);
-       
-       return rb.entity("{\"mensagem\":\"sucesso\"}").build();
+        // parametros incorretos
+        if (ida.equals("") || assentos.equals("0")) {
+            return rb.status(400).entity("{\"mensagem\":\"parâmetros incorretos\"}").build();
+        }
+        // voo ida não existe ou não tem assentos
+        Integer intAssentos = Integer.parseInt(assentos);
+        if (!VOOS.containsKey(ida) || VOOS.get(ida).getAssentos() < intAssentos) {
+            return rb.status(404).entity("{\"mensagem\":\"voo não disponível\"}").build();
+        }
+        // voo volta está definido
+        if (!volta.equals("")) {
+             // voo volta não existe ou não tem assentos
+             if (!VOOS.containsKey(volta) || VOOS.get(volta).getAssentos() < intAssentos) {
+                 return rb.status(404).entity("{\"mensagem\":\"voo não disponível\"}").build();
+             }
+             VOOS.get(volta).diminuirAssentos(intAssentos);
+        }
+        VOOS.get(ida).diminuirAssentos(intAssentos);
+
+        return rb.entity("{\"mensagem\":\"sucesso\"}").build();
     }
     
     /**
@@ -149,7 +151,9 @@ public class ServidorREST {
         ResponseBuilder rb = Response.status(200);
         ArrayList<Hospedagem> list = new ArrayList<>();
         
-        if (destino.equals("")) {
+        System.out.println(destino+dataEntrada+dataSaida);
+        
+        if (destino.equals("") || dataEntrada.compareTo(dataSaida) > 0) {
             return rb.status(400).entity("{\"size\":\"0\"}").build();
         }
         
@@ -198,6 +202,8 @@ public class ServidorREST {
             @DefaultValue("0") @QueryParam("quartos") String quartos) {
         
         ResponseBuilder rb = Response.status(200);
+        
+        System.out.println(destino+dataEntrada+dataSaida+quartos);
         
         // parâmetros incorretos
         if (destino.equals("") || dataEntrada.equals("") 
